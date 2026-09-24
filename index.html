@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<!--
+  ==============================================================================
+  THE HELPDESK+  —  page structure
+  ==============================================================================
+
+  This is ONE of three code files:
+
+      index.html      this file — the page structure
+      styles.css      the styling (what it looks like)
+      app.js          the behaviour (what it does)
+
+  You will rarely need to edit this file. It describes WHAT is on the
+  screen. It does not decide how anything looks (that is styles.css) or
+  what anything does (that is app.js).
+
+  ==============================================================================
+  HOW THIS FILE IS ARRANGED, TOP TO BOTTOM
+  ==============================================================================
+  <head> .......... page title, description, and the link to styles.css
+
+  <body> .......... everything below, in this order:
+      the icon sprite        all the little pictures, drawn once, ~line 60
+      the offline banner     hidden until the network drops
+      the login screen       one <main> landmark, ~line 85
+      the app shell          sidebar menu + header + the pages
+          dashboard          summary and common tasks
+          incidents          support tickets
+          memos              purchase requests and printing
+          inventory          stock and assets
+          reports            filtering, CSV export, printing
+          settings           password and connection
+      the toast area         the small messages that slide in
+
+  ==============================================================================
+  WHAT THE OTHER FILES IN THIS PROJECT ARE
+  ==============================================================================
+      styles.css                  styling        NEEDED
+      app.js                      behaviour      NEEDED
+      manifest.json               add to home screen        optional
+      service-worker.js           works offline             optional
+      assets/icons/               phone home screen icon    optional
+      assets/brand/logo.webp      the logo                  optional
+      google-apps-script/Code.gs  the server code. Goes into Google,
+                                  NOT into GitHub.
+      README.md                   step-by-step instructions
+
+  If an OPTIONAL file is missing, the site still works. The logo simply
+  does not appear, or you cannot install the app to a phone.
+  ==============================================================================
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The HelpDesk+ | IT Operations System</title>
+
+<!-- ============================================================
+     META
+     These control how the site appears in Google and when a link
+     is shared on WhatsApp / Facebook.
+     ============================================================ -->
+<meta name="description" content="Log IT incidents, generate purchase request memos, and track IT inventory from one dashboard. Built for the office IT team at the Accra office." />
+<meta name="theme-color" content="#342fc6" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="The HelpDesk+ | IT Operations System" />
+<meta property="og:description" content="Log IT incidents, generate purchase memos, and track IT inventory from one dashboard." />
+<meta property="og:image" content="assets/brand/logo-768.png" />
+<meta name="twitter:card" content="summary_large_image" />
+
+<!-- Installable app (PWA) -->
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="HelpDesk+" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="manifest" href="manifest.json" />
+
+<!-- Icons -->
+<link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png" />
+<link rel="icon" type="image/png" sizes="16x16" href="assets/icons/favicon-16.png" />
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
+
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ============================================================
+     ICON SPRITE
+     All icons live here once and are referenced with <use>.
+     This means zero icon files to download and zero emoji that
+     look different on every computer.
+     ============================================================ -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="i-dashboard" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1a3 3 0 0 0 0 6v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1a3 3 0 0 0 0-6z"/><path d="M13 6v12"/></symbol>
+  <symbol id="i-memo" viewBox="0 0 24 24"><path d="M14 3v5h5"/><path d="M19 8v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7z"/><path d="M9 13h6"/><path d="M9 17h4"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></symbol>
+  <symbol id="i-reports" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16v-4"/><path d="M12 16V8"/><path d="M17 16v-6"/></symbol>
+  <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 21v-6M4 11V3M12 21v-9M12 8V3M20 21v-4M20 13V3"/><path d="M1.5 15h5M9.5 8h5M17.5 17h5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20.5 20.5-4-4"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12M7.5 10.5 12 15l4.5-4.5"/><path d="M4 20h16"/></symbol>
+  <symbol id="i-printer" viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="7" rx="1"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7"/><path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/></symbol>
+  <symbol id="i-save" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 9v5"/><path d="M12 17.5h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-offline" viewBox="0 0 24 24"><path d="M2 2l20 20"/><path d="M8.5 16.4a5 5 0 0 1 7 0"/><path d="M5 12.8a10 10 0 0 1 4.3-2.4"/><path d="M19 12.8a10 10 0 0 0-3.1-2.2"/><path d="M2 8.8A15 15 0 0 1 8.6 6"/><path d="M22 8.8a15 15 0 0 0-8.4-2.7"/><path d="M12 20h.01"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3 2"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4z"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></symbol>
+</svg>
+
+<!-- Accessible skip link: lets keyboard users jump straight past the menu -->
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<!-- ============================================================
+     OFFLINE / SYNC BANNER
+     Hidden by default. Shown by js/02-store.js when the browser
+     goes offline, or when there are saved-to-queue items waiting.
+     ============================================================ -->
+<div class="banner" id="syncBanner" role="status" aria-live="polite" hidden>
+  <svg class="banner-icon" aria-hidden="true"><use href="#i-offline"/></svg>
+  <span id="syncBannerText">You are offline. Changes are saved on this device and will sync automatically.</span>
+  <button type="button" class="banner-btn" id="syncNowBtn">Retry now</button>
+</div>
+
+<!-- ============================================================
+     SCREEN 1 — LOGIN
+     ============================================================ -->
+<!-- The login screen is a <main> landmark. Only one screen is ever visible
+     at a time, so a screen reader never meets two "main" areas at once. -->
+<main class="login" id="loginScreen">
+  <div class="login-wrap">
+    <div class="login-intro">
+      <!-- <picture> lets the browser choose the smallest file it understands.
+           Modern browsers take the WebP (28 KB). Only very old ones fall back
+           to the PNG (156 KB) — and they are rare enough that this costs
+           nothing to anyone else. -->
+      <img src="assets/brand/logo.webp" alt="" width="192" height="119" class="login-logo" />
+      <h1>One place for IT work.</h1>
+      <p class="login-lede">Log incidents, generate purchase request memos, and track IT inventory
+        &mdash; on a computer or a phone, even when the network is down.</p>
+      <ul class="login-points">
+        <li><svg aria-hidden="true"><use href="#i-ticket"/></svg> Log and resolve support tickets</li>
+        <li><svg aria-hidden="true"><use href="#i-memo"/></svg> Build printable purchase memos</li>
+        <li><svg aria-hidden="true"><use href="#i-box"/></svg> Track stock and low-stock alerts</li>
+      </ul>
+    </div>
+
+    <form class="login-card" id="loginForm" novalidate>
+      <p class="eyebrow">Technician Login</p>
+      <h2>Welcome back</h2>
+
+      <div class="field">
+        <label for="loginTechnician">Technician</label>
+        <select id="loginTechnician" required autocomplete="username">
+          <option value="">Select technician</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" required autocomplete="current-password"
+               placeholder="Enter your password" />
+      </div>
+
+      <button class="btn primary block" type="submit" id="loginButton">Log in</button>
+
+      <p class="form-error" id="loginError" role="alert"></p>
+      <p class="login-hint">
+        Signed in on a shared computer? Use <strong>Log out</strong> when you finish &mdash;
+        it clears this device completely.
+      </p>
+    </form>
+  </div>
+</main>
+
+<!-- ============================================================
+     SCREEN 2 — THE APPLICATION
+     ============================================================ -->
+<div class="app" id="appScreen" hidden>
+
+  <!-- Sidebar navigation -->
+  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <div class="sidebar-head">
+      <img src="assets/brand/logo.webp" alt="The HelpDesk+" class="sidebar-logo" width="120" height="75" />
+      <button class="icon-btn menu-btn" id="menuToggle" type="button"
+              aria-label="Open navigation" aria-expanded="false" aria-controls="sidebarNav">
+        <svg aria-hidden="true"><use href="#i-menu"/></svg>
+      </button>
+    </div>
+
+    <nav class="nav" id="sidebarNav">
+      <a href="#dashboard" class="nav-link is-active" data-page="dashboard"><svg aria-hidden="true"><use href="#i-dashboard"/></svg> Dashboard</a>
+      <a href="#incidents" class="nav-link" data-page="incidents"><svg aria-hidden="true"><use href="#i-ticket"/></svg> Incidents</a>
+      <a href="#memos" class="nav-link" data-page="memos"><svg aria-hidden="true"><use href="#i-memo"/></svg> Memos</a>
+      <a href="#inventory" class="nav-link" data-page="inventory"><svg aria-hidden="true"><use href="#i-box"/></svg> Inventory</a>
+      <a href="#reports" class="nav-link" data-page="reports"><svg aria-hidden="true"><use href="#i-reports"/></svg> Reports</a>
+      <a href="#settings" class="nav-link" data-page="settings"><svg aria-hidden="true"><use href="#i-settings"/></svg> Settings</a>
+    </nav>
+
+    <div class="sidebar-foot">
+      <p class="who" id="activeUserName">Technician</p>
+      <p class="who-sub" id="connectionState"><svg aria-hidden="true"><use href="#i-clock"/></svg> Connecting&hellip;</p>
+      <button class="btn ghost block" id="logoutBtn" type="button"><svg aria-hidden="true"><use href="#i-logout"/></svg> Log out</button>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim" hidden></div>
+
+  <!-- Main content -->
+  <main class="main" id="main" tabindex="-1">
+    <header class="pagebar">
+      <div class="pagebar-copy">
+        <p class="eyebrow" id="pageEyebrow">Office IT Operations</p>
+        <h1 id="pageTitle">Dashboard</h1>
+        <p class="page-sub" id="pageSubtitle">Everything happening across the IT desk right now.</p>
+      </div>
+      <div class="pagebar-actions">
+        <button class="btn primary" type="button" id="quickIncidentBtn"><svg aria-hidden="true"><use href="#i-plus"/></svg> Log Incident</button>
+        <button class="btn ghost" type="button" id="quickMemoBtn"><svg aria-hidden="true"><use href="#i-plus"/></svg> New Memo</button>
+        <button class="btn ghost" type="button" id="backupBtn"><svg aria-hidden="true"><use href="#i-download"/></svg> Back up</button>
+      </div>
+    </header>
+
+    <!-- ---------- PAGE: DASHBOARD ---------- -->
+    <section class="page" id="page-dashboard" aria-labelledby="pageTitle">
+
+      <!-- Priority actions. On a phone these sit ABOVE the numbers,
+           because a technician mid-incident needs to act, not read. -->
+      <div class="card actions-card">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Start here</p>
+            <h2>Common tasks</h2>
+          </div>
+        </div>
+        <div class="action-grid">
+          <button class="action" type="button" data-action="incident" data-category="Internet / Network">
+            <span class="action-ico"><svg aria-hidden="true"><use href="#i-ticket"/></svg></span>
+            <span class="action-body"><strong>Network issue</strong><small>Internet &amp; LAN faults</small></span>
+            <svg class="action-arrow" aria-hidden="true"><use href="#i-arrow"/></svg>
+          </button>
+          <button class="action" type="button" data-action="incident" data-category="Computer Component">
+            <span class="action-ico"><svg aria-hidden="true"><use href="#i-ticket"/></svg></span>
+            <span class="action-body"><strong>Computer issue</strong><small>Parts &amp; devices</small></span>
+            <svg class="action-arrow" aria-hidden="true"><use href="#i-arrow"/></svg>
+          </button>
+          <button class="action" type="button" data-action="incident" data-category="Call Center Phone">
+            <span class="action-ico"><svg aria-hidden="true"><use href="#i-ticket"/></svg></span>
+            <span class="action-body"><strong>Phone issue</strong><small>Call centre handsets</small></span>
+            <svg class="action-arrow" aria-hidden="true"><use href="#i-arrow"/></svg>
+          </button>
+          <button class="action" type="button" data-action="memo">
+            <span class="action-ico"><svg aria-hidden="true"><use href="#i-memo"/></svg></span>
+            <span class="action-body"><strong>Request items</strong><small>Start a purchase memo</small></span>
+            <svg class="action-arrow" aria-hidden="true"><use href="#i-arrow"/></svg>
+          </button>
+          <button class="action" type="button" data-action="stock">
+            <span class="action-ico"><svg aria-hidden="true"><use href="#i-box"/></svg></span>
+            <span class="action-body"><strong>Issue stock</strong><small>Receive or hand out items</small></span>
+            <svg class="action-arrow" aria-hidden="true"><use href="#i-arrow"/></svg>
+          </button>
+          <button class="action" type="button" data-action="report">
+            <span class="action-ico"><svg aria-hidden="true"><use href="#i-reports"/></svg></span>
+            <span class="action-body"><strong>Weekly report</strong><small>Load &amp; print records</small></span>
+            <svg class="action-arrow" aria-hidden="true"><use href="#i-arrow"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- The numbers. Compact 2-column grid on phones. -->
+      <section class="stats" id="statsRow" aria-label="System summary"></section>
+
+      <div class="dash-grid">
+        <div class="dash-col">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <p class="eyebrow">Recent activity</p>
+                <h2>Latest incidents</h2>
+              </div>
+              <button class="btn tiny ghost" type="button" data-goto="incidents">View all</button>
+            </div>
+            <div id="recentIncidents" class="list"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><div><p class="eyebrow">Incidents by type</p><h2>Issue volume</h2></div></div>
+            <div id="categoryChart" class="bars"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><div><p class="eyebrow">Technicians</p><h2>Assigned load</h2></div></div>
+            <div id="loadChart" class="bars"></div>
+          </div>
+        </div>
+
+        <div class="dash-col">
+          <div class="card">
+            <div class="card-head">
+              <div>
+                <p class="eyebrow">Stock alerts</p>
+                <h2>Low inventory</h2>
+              </div>
+              <button class="btn tiny ghost" type="button" data-goto="inventory">View all</button>
+            </div>
+            <div id="lowStockList" class="list"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><div><p class="eyebrow">Status</p><h2>Resolution split</h2></div></div>
+            <div id="statusDonut" class="donut-wrap"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- PAGE: INCIDENTS ---------- -->
+    <section class="page" id="page-incidents" hidden aria-labelledby="pageTitle">
+      <div class="split">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <p class="eyebrow" id="incidentBadge">New Incident</p>
+              <h2 id="incidentFormTitle">Incident details</h2>
+            </div>
+            <button class="btn tiny ghost" type="button" id="resetIncidentBtn">Clear</button>
+          </div>
+
+          <form id="incidentForm" novalidate>
+            <input type="hidden" id="incidentId" />
+            <input type="hidden" id="incidentVersion" />
+
+            <div class="grid-2">
+              <div class="field">
+                <label for="requester">Requester name</label>
+                <input type="text" id="requester" placeholder="Who reported it?" required />
+              </div>
+              <div class="field">
+                <label for="department">Department / unit</label>
+                <input type="text" id="department" placeholder="e.g. Call Center" />
+              </div>
+              <div class="field">
+                <label for="location">Office location</label>
+                <input type="text" id="location" placeholder="e.g. 1st Floor, Desk 5" />
+              </div>
+              <div class="field">
+                <label for="category">Issue category</label>
+                <select id="category" required>
+                  <option value="">Select category</option>
+                  <option>Internet / Network</option>
+                  <option>Computer Component</option>
+                  <option>Call Center Phone</option>
+                  <option>Software / Application</option>
+                  <option>Printer / Scanner</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="technician">Assign technician</label>
+                <select id="technician" required></select>
+              </div>
+              <div class="field">
+                <label for="status">Status</label>
+                <select id="status" required>
+                  <option>Pending</option>
+                  <option>In Progress</option>
+                  <option>Resolved</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="priority">Priority</label>
+                <select id="priority" required>
+                  <option>Low</option>
+                  <option>Medium</option>
+                  <option>High</option>
+                  <option>Critical</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="timeSpent">Time spent</label>
+                <input type="text" id="timeSpent" placeholder="e.g. 30 minutes" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="description">Issue description</label>
+              <textarea id="description" rows="3" placeholder="Describe the fault, the device, and what the user reported." required></textarea>
+            </div>
+
+            <div class="field">
+              <label for="resolution">Resolution / work done <span class="opt">(required once resolved)</span></label>
+              <textarea id="resolution" rows="3" placeholder="Troubleshooting steps or the final fix."></textarea>
+            </div>
+
+            <div class="field">
+              <label for="componentChanged">Component changed</label>
+              <input type="text" id="componentChanged" placeholder="e.g. RAM, keyboard, network cable" />
+            </div>
+
+            <div class="form-actions">
+              <button class="btn primary" type="submit" id="saveIncidentBtn"><svg aria-hidden="true"><use href="#i-save"/></svg> Save incident</button>
+              <button class="btn danger ghost" type="button" id="deleteIncidentBtn" hidden><svg aria-hidden="true"><use href="#i-trash"/></svg> Delete</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <p class="eyebrow">Tickets</p>
+              <h2 id="incidentListTitle">All incidents</h2>
+            </div>
+            <button class="btn tiny ghost" type="button" id="sampleIncidentBtn">Add sample</button>
+          </div>
+
+          <div class="filters">
+            <div class="search">
+              <svg aria-hidden="true"><use href="#i-search"/></svg>
+              <label class="sr-only" for="incidentSearch">Search incidents</label>
+              <input type="search" id="incidentSearch" placeholder="Search requester, issue, location&hellip;" />
+            </div>
+            <div class="field inline">
+              <label for="incidentStatusFilter">Filter by status</label>
+              <select id="incidentStatusFilter">
+                <option value="All">All statuses</option>
+                <option>Pending</option>
+                <option>In Progress</option>
+                <option>Resolved</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="incidentList" class="list scrollable"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- PAGE: MEMOS ---------- -->
+    <section class="page" id="page-memos" hidden aria-labelledby="pageTitle">
+      <div class="split">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <p class="eyebrow" id="memoBadge">New Memo</p>
+              <h2 id="memoFormTitle">Memo builder</h2>
+            </div>
+            <button class="btn tiny ghost" type="button" id="resetMemoBtn">Clear</button>
+          </div>
+
+          <form id="memoForm" novalidate>
+            <input type="hidden" id="memoId" />
+            <input type="hidden" id="memoVersion" />
+
+            <div class="grid-2">
+              <div class="field">
+                <label for="memoTo">To</label>
+                <input type="text" id="memoTo" required placeholder="e.g. The Finance Manager" />
+              </div>
+              <div class="field">
+                <label for="memoFrom">From</label>
+                <input type="text" id="memoFrom" required placeholder="e.g. IT Department" />
+              </div>
+              <div class="field">
+                <label for="memoDate">Date</label>
+                <input type="date" id="memoDate" required />
+              </div>
+              <div class="field">
+                <label for="memoSubject">Subject</label>
+                <input type="text" id="memoSubject" required placeholder="e.g. Purchase Request - Network Accessories" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="memoPurpose">Purpose</label>
+              <textarea id="memoPurpose" rows="3" required placeholder="Why these items are needed."></textarea>
+            </div>
+
+            <div class="field">
+              <div class="field-head">
+                <label for="memoItemName">Requested items</label>
+                <button class="btn tiny ghost" type="button" id="addItemBtn"><svg aria-hidden="true"><use href="#i-plus"/></svg> Add item</button>
+              </div>
+              <div class="table-wrap">
+                <table class="items-table">
+                  <thead>
+                    <tr><th scope="col">Item</th><th scope="col" class="num">Qty</th><th scope="col" class="num">Unit cost (GH&#8373;)</th><th scope="col"><span class="sr-only">Remove</span></th></tr>
+                  </thead>
+                  <tbody id="memoItemsBody"></tbody>
+                </table>
+              </div>
+              <p class="total-line">Estimated total: <strong id="memoTotal">GH&#8373;0.00</strong></p>
+            </div>
+
+            <div class="grid-3">
+              <div class="field">
+                <label for="sign1">Signature 1 label</label>
+                <input type="text" id="sign1" placeholder="Prepared By" />
+              </div>
+              <div class="field">
+                <label for="sign2">Signature 2 label</label>
+                <input type="text" id="sign2" placeholder="Checked By" />
+              </div>
+              <div class="field">
+                <label for="sign3">Signature 3 label</label>
+                <input type="text" id="sign3" placeholder="Approved By" />
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn primary" type="submit" id="saveMemoBtn"><svg aria-hidden="true"><use href="#i-save"/></svg> Save memo</button>
+              <button class="btn ghost" type="button" id="printMemoBtn"><svg aria-hidden="true"><use href="#i-printer"/></svg> Print</button>
+              <button class="btn danger ghost" type="button" id="deleteMemoBtn" hidden><svg aria-hidden="true"><use href="#i-trash"/></svg> Delete</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card preview-card">
+          <div class="card-head">
+            <div>
+              <p class="eyebrow">Live preview</p>
+              <h2>This is what prints</h2>
+            </div>
+            <button class="btn tiny ghost" type="button" id="templateMemoBtn">Load template</button>
+          </div>
+          <!-- This element is what gets sent to the printer. See @media print in styles.css -->
+          <div class="memo-preview" id="memoPreview"></div>
+          <p class="hint">The preview updates as you type. Printing sends only this document to the printer &mdash; no menus, no buttons.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <p class="eyebrow">Saved</p>
+            <h2>Saved memos</h2>
+          </div>
+        </div>
+        <div class="search wide">
+          <svg aria-hidden="true"><use href="#i-search"/></svg>
+          <label class="sr-only" for="memoSearch">Search saved memos</label>
+          <input type="search" id="memoSearch" placeholder="Search by subject, recipient or item&hellip;" />
+        </div>
+        <div id="memoList" class="list scrollable"></div>
+      </div>
+    </section>
+
+    <!-- ---------- PAGE: INVENTORY ---------- -->
+    <section class="page" id="page-inventory" hidden aria-labelledby="pageTitle">
+      <div class="split">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <p class="eyebrow" id="itemBadge">New Item</p>
+              <h2 id="itemFormTitle">Stock item</h2>
+            </div>
+            <button class="btn tiny ghost" type="button" id="resetItemBtn">Clear</button>
+          </div>
+
+          <form id="itemForm" novalidate>
+            <input type="hidden" id="itemId" />
+            <input type="hidden" id="itemVersion" />
+
+            <div class="grid-2">
+              <div class="field">
+                <label for="itemName">Item name</label>
+                <input type="text" id="itemName" required placeholder="e.g. DDR 4 8GB RAM" />
+              </div>
+              <div class="field">
+                <label for="itemCategory">Category</label>
+                <select id="itemCategory" required>
+                  <option value="">Select category</option>
+                  <option>Storage</option>
+                  <option>Memory</option>
+                  <option>Battery</option>
+                  <option>Networking</option>
+                  <option>Peripheral</option>
+                  <option>Phone Accessory</option>
+                  <option>Printer Supply</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="itemSku">SKU / asset code</label>
+                <input type="text" id="itemSku" placeholder="e.g. RAM-DDR4-8" />
+              </div>
+              <div class="field">
+                <label for="itemLocation">Storage location</label>
+                <input type="text" id="itemLocation" placeholder="e.g. IT Store" />
+              </div>
+              <div class="field">
+                <label for="itemQuantity">Quantity in stock</label>
+                <input type="number" id="itemQuantity" min="0" step="1" value="0" required />
+              </div>
+              <div class="field">
+                <label for="itemReorder">Reorder level</label>
+                <input type="number" id="itemReorder" min="0" step="1" value="2" required />
+                <p class="field-hint">You get a low-stock alert when quantity reaches this number.</p>
+              </div>
+              <div class="field">
+                <label for="itemUnitCost">Unit cost (GH&#8373;)</label>
+                <input type="number" id="itemUnitCost" min="0" step="0.01" value="0" required />
+              </div>
+              <div class="field">
+                <label for="itemSupplier">Supplier / vendor</label>
+                <input type="text" id="itemSupplier" placeholder="e.g. Local Vendor" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="itemNotes">Notes</label>
+              <textarea id="itemNotes" rows="2" placeholder="Anything worth remembering about this item."></textarea>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn primary" type="submit" id="saveItemBtn"><svg aria-hidden="true"><use href="#i-save"/></svg> Save item</button>
+              <button class="btn danger ghost" type="button" id="deleteItemBtn" hidden><svg aria-hidden="true"><use href="#i-trash"/></svg> Delete</button>
+            </div>
+          </form>
+
+          <hr class="rule" />
+
+          <div class="card-head">
+            <div>
+              <p class="eyebrow">Stock movement</p>
+              <h2>Receive or issue</h2>
+            </div>
+          </div>
+          <form id="movementForm" novalidate>
+            <div class="grid-3">
+              <div class="field">
+                <label for="moveItem">Item</label>
+                <select id="moveItem" required><option value="">Select item</option></select>
+              </div>
+              <div class="field">
+                <label for="moveAction">Action</label>
+                <select id="moveAction" required>
+                  <option value="receive">Receive / add</option>
+                  <option value="issue">Issue / remove</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="moveQty">Quantity</label>
+                <input type="number" id="moveQty" min="1" step="1" value="1" required />
+              </div>
+            </div>
+            <div class="field">
+              <label for="moveReason">Reason / note</label>
+              <input type="text" id="moveReason" placeholder="e.g. Issued to Finance for network fault INC-2026-0004" />
+            </div>
+            <div class="form-actions">
+              <button class="btn primary" type="submit" id="saveMoveBtn">Update stock</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <p class="eyebrow">Current stock</p>
+              <h2 id="itemListTitle">Inventory list</h2>
+            </div>
+            <button class="btn tiny ghost" type="button" id="sampleItemBtn">Add sample</button>
+          </div>
+
+          <div class="filters">
+            <div class="search">
+              <svg aria-hidden="true"><use href="#i-search"/></svg>
+              <label class="sr-only" for="itemSearch">Search inventory</label>
+              <input type="search" id="itemSearch" placeholder="Search items, SKU or location&hellip;" />
+            </div>
+            <div class="field inline">
+              <label for="itemViewFilter">Show</label>
+              <select id="itemViewFilter">
+                <option value="all">All items</option>
+                <option value="low">Low stock only</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="itemList" class="list scrollable"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- PAGE: REPORTS ---------- -->
+    <section class="page" id="page-reports" hidden aria-labelledby="pageTitle">
+      <div class="card no-print">
+        <div class="card-head"><div><p class="eyebrow">Filter</p><h2>Choose what to report on</h2></div></div>
+        <div class="grid-4">
+          <div class="field">
+            <label for="reportContent">Content</label>
+            <select id="reportContent">
+              <option value="all">All records</option>
+              <option value="incidents">Incidents only</option>
+              <option value="memos">Memos only</option>
+              <option value="inventory">Inventory only</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="reportPeriod">Period</label>
+            <select id="reportPeriod">
+              <option value="thisWeek">This week</option>
+              <option value="lastWeek">Last week</option>
+              <option value="thisMonth" selected>This month</option>
+              <option value="lastMonth">Last month</option>
+              <option value="custom">Custom range</option>
+              <option value="all">All time</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="reportFrom">From date</label>
+            <input type="date" id="reportFrom" />
+          </div>
+          <div class="field">
+            <label for="reportTo">To date</label>
+            <input type="date" id="reportTo" />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn primary" type="button" id="loadReportBtn"><svg aria-hidden="true"><use href="#i-reports"/></svg> Load report</button>
+          <button class="btn ghost" type="button" id="exportReportBtn"><svg aria-hidden="true"><use href="#i-download"/></svg> Export CSV</button>
+          <button class="btn ghost" type="button" id="printReportBtn"><svg aria-hidden="true"><use href="#i-printer"/></svg> Print</button>
+        </div>
+      </div>
+
+      <div class="stats" id="reportStats" aria-label="Report totals"></div>
+
+      <div class="card">
+        <div id="reportOutput" class="report-output">
+          <p class="empty">Choose a period above, then press <strong>Load report</strong>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- PAGE: SETTINGS ---------- -->
+    <section class="page" id="page-settings" hidden aria-labelledby="pageTitle">
+      <div class="split">
+        <div class="card">
+          <div class="card-head"><div><p class="eyebrow">Account</p><h2>Change your password</h2></div></div>
+          <form id="passwordForm" novalidate>
+            <div class="field">
+              <label for="currentPassword">Current password</label>
+              <input type="password" id="currentPassword" required autocomplete="current-password" />
+            </div>
+            <div class="field">
+              <label for="newPassword">New password</label>
+              <input type="password" id="newPassword" required autocomplete="new-password" minlength="10" />
+              <p class="field-hint">At least 10 characters. A short phrase you will remember beats a short messy word.</p>
+            </div>
+            <div class="field">
+              <label for="confirmPassword">Confirm new password</label>
+              <input type="password" id="confirmPassword" required autocomplete="new-password" />
+            </div>
+            <div class="form-actions">
+              <button class="btn primary" type="submit" id="savePasswordBtn">Update password</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><div><p class="eyebrow">Connection</p><h2>Backend status</h2></div></div>
+          <div id="backendPanel" class="status-panel"></div>
+          <div class="form-actions">
+            <button class="btn ghost" type="button" id="testBackendBtn"><svg aria-hidden="true"><use href="#i-refresh"/></svg> Test connection</button>
+            <button class="btn ghost" type="button" id="localModeBtn">Use this device only</button>
+            <button class="btn ghost" type="button" id="syncQueueBtn"><svg aria-hidden="true"><use href="#i-refresh"/></svg> Sync now</button>
+          </div>
+          <details class="advanced">
+            <summary>Advanced: change the backend URL</summary>
+            <p class="hint">Only change this if you have set up a new Google Sheet and deployed a new Apps Script web app.</p>
+            <div class="field">
+              <label for="backendUrlInput">Apps Script web app URL</label>
+              <input type="url" id="backendUrlInput" placeholder="https://script.google.com/macros/s/&hellip;/exec" />
+            </div>
+            <div class="form-actions">
+              <button class="btn primary" type="button" id="saveBackendBtn">Save URL</button>
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>The HelpDesk+ &middot; <span id="footerUser">Technician</span> &middot; <span id="footerVersion">v3.0.0</span></p>
+      <p id="footerQueue" class="footer-queue" hidden></p>
+    </footer>
+  </main>
+</div>
+
+<!-- Toast messages appear here. aria-live means screen readers announce them. -->
+<div class="toasts" id="toasts" aria-live="polite" aria-atomic="false"></div>
+
+<!-- ===============================================================================
+     THE APPLICATION CODE
+     All the behaviour lives in app.js, beside this file.
+     It is one file, divided into 13 named sections. Open it and search
+     for "SECTION 1 of 13" to reach your settings.
+     =============================================================================== -->
+<script src="app.js"></script>
+</body>
+</html>
