@@ -1,0 +1,685 @@
+/* =====================================================================
+   IT JOB LOG - STYLES (style.css)
+   =====================================================================
+   All the CSS lives here. To change the look quickly, edit the COLOURS
+   block at the top (section 1).
+   ===================================================================== */
+
+/* =====================================================================
+   1. COLOURS AND SIZES  (change these first)
+   ===================================================================== */
+:root {
+  --bg: #e9edf0;          /* page background */
+  --surface: #ffffff;     /* cards, inputs */
+  --ink: #16222b;         /* main text */
+  --muted: #5b6973;       /* secondary text */
+  --line: #cdd6dc;        /* borders */
+
+  --primary: #1b4965;     /* buttons, selected tab, bars */
+  --primary-ink: #ffffff; /* text on primary buttons */
+
+  /* Status colours (like indicator lights) */
+  --open: #d98a00;        /* Open = amber */
+  --prog: #2b7fd4;        /* In progress = blue */
+  --done: #1f9d62;        /* Resolved = green */
+
+  --r: 8px;               /* roundness of boxes and buttons */
+}
+
+/* Dark mode: used automatically when the phone/PC is set to dark */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #10181e;
+    --surface: #192329;
+    --ink: #e6edf1;
+    --muted: #97a6b0;
+    --line: #2b3a43;
+    --primary: #5fb0e3;
+    --primary-ink: #0c1a22;
+  }
+}
+
+
+/* =====================================================================
+   2. BASE
+   ===================================================================== */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%; /* stops phones auto-enlarging text */
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.45 "Schibsted Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Make buttons and inputs use the page font */
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
+}
+
+/* Visible outline when navigating with the keyboard */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+
+/* =====================================================================
+   3. TOP BAR AND TABS
+   ===================================================================== */
+.top {
+  position: sticky;          /* stays at the top while scrolling */
+  top: 0;
+  z-index: 5;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.top-in {
+  max-width: 780px;          /* content width on big screens */
+  margin: 0 auto;
+  padding: 10px 16px 0;
+}
+
+h1 {
+  margin: 0 0 6px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;          /* tabs scroll sideways on small phones */
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  background: none;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  padding: 10px 12px;
+  cursor: pointer;
+  color: var(--muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* The tab you are currently on */
+.tab[aria-selected="true"] {
+  color: var(--ink);
+  border-bottom-color: var(--primary);
+  font-weight: 600;
+}
+
+/* Little number badge on Today / Open */
+.tab .n {
+  display: inline-block;
+  min-width: 1.4em;
+  margin-left: 4px;
+  padding: 0 6px;
+  border-radius: 99px;
+  background: var(--bg);
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+
+/* =====================================================================
+   4. PAGE LAYOUT
+   ===================================================================== */
+main {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* Only the active tab's section is shown (script.html adds the "on" class) */
+.view {
+  display: none;
+}
+
+.view.on {
+  display: block;
+}
+
+#boot {
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--muted);
+}
+
+
+/* =====================================================================
+   5. FORM FIELDS
+   ===================================================================== */
+label,
+.lbl {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin: 14px 0 5px;
+}
+
+/* The "(optional)" text beside a label */
+.opt {
+  font-weight: 400;
+  color: var(--muted);
+}
+
+input[type="text"],
+input[type="number"],
+select,
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+}
+
+textarea {
+  min-height: 76px;
+  resize: vertical;
+}
+
+/* Two fields side by side (one column on narrow phones) */
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 520px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Helper text under "Who asked?" */
+.hint {
+  margin: 6px 0 0;
+  font-size: 0.88rem;
+  color: var(--muted);
+  min-height: 1.3em;
+}
+
+
+/* =====================================================================
+   6. CATEGORY CHIPS AND STATUS BUTTONS
+   ===================================================================== */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  padding: 8px 13px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  cursor: pointer;
+}
+
+/* A chip that is selected */
+.chip[aria-pressed="true"] {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-ink);
+  font-weight: 600;
+}
+
+/* Status picker: Resolved / In progress / Open */
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.seg button {
+  border: 0;
+  background: none;
+  padding: 9px 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.seg button + button {
+  border-left: 1px solid var(--line);
+}
+
+.seg button[aria-pressed="true"] {
+  background: var(--bg);
+  font-weight: 600;
+}
+
+/* The small coloured circle next to a status */
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--c, var(--muted));  /* colour is set from script.html */
+  flex: none;
+}
+
+
+/* =====================================================================
+   7. BUTTONS
+   ===================================================================== */
+.btn {
+  background: var(--primary);
+  color: var(--primary-ink);
+  border: 0;
+  border-radius: var(--r);
+  padding: 12px 20px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* Outlined version for secondary actions (Cancel, Show more, Print) */
+.btn.ghost {
+  background: none;
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+
+.actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+
+/* =====================================================================
+   8. JOB CARDS (Today, Open, History)
+   ===================================================================== */
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 12px;
+  flex-wrap: wrap;
+}
+
+.head h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.sub {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+/* One job. The coloured left edge shows its status (--led is set in script.html). */
+.job {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--led);
+  border-radius: var(--r);
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+
+.job-top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: baseline;
+}
+
+.job-top .dept {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.job-top .when {
+  margin-left: auto;          /* pushes the date to the right */
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.issue {
+  margin: 6px 0 0;
+}
+
+.action {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+/* Row of small details: status, category, who logged it, minutes... */
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-top: 8px;
+  font-size: 0.88rem;
+  color: var(--muted);
+  align-items: center;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* The "Update" text button on each card */
+.link {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin-left: auto;
+  color: var(--primary);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* The hidden edit panel that opens under a card */
+.edit {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.edit label {
+  margin-top: 8px;
+}
+
+/* Message shown when a list has no jobs */
+.empty {
+  padding: 28px 12px;
+  text-align: center;
+  color: var(--muted);
+  border: 1px dashed var(--line);
+  border-radius: var(--r);
+}
+
+
+/* =====================================================================
+   9. HISTORY FILTERS
+   ===================================================================== */
+.filters {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;   /* search box is twice as wide */
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+@media (max-width: 560px) {
+  .filters {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* =====================================================================
+   10. SUMMARY TAB
+   ===================================================================== */
+/* The row of big-number boxes */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+  margin: 0 0 18px;
+}
+
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 12px;
+}
+
+.stat b {
+  display: block;
+  font-size: 1.5rem;
+  line-height: 1.1;
+}
+
+.stat span {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* Bar charts: "By category", "By department"... */
+.bars h3 {
+  margin: 18px 0 8px;
+  font-size: 0.95rem;
+}
+
+.bar {
+  display: grid;
+  grid-template-columns: minmax(90px, 170px) 1fr 34px;  /* name | bar | number */
+  gap: 10px;
+  align-items: center;
+  margin: 5px 0;
+  font-size: 0.92rem;
+}
+
+.bar .t {
+  height: 10px;
+  background: var(--bg);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.bar .t i {
+  display: block;
+  height: 100%;
+  background: var(--primary);
+  border-radius: 99px;
+}
+
+.bar .v {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+
+/* =====================================================================
+   11. POP-UP MESSAGE (toast)
+   ===================================================================== */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: var(--bg);
+  padding: 10px 16px;
+  border-radius: var(--r);
+  opacity: 0;                  /* hidden until script.html adds the "show" class */
+  pointer-events: none;
+  transition: opacity 0.2s;
+  max-width: 90vw;
+  z-index: 9;
+}
+
+.toast.show {
+  opacity: 1;
+}
+
+.toast.err {                   /* error messages are red */
+  background: #a3261b;
+  color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    transition: none;
+  }
+}
+
+
+/* =====================================================================
+   12. PRINTING (the "Print report" button)
+   ===================================================================== */
+@media print {
+  /* Hide buttons, tabs and filters so only the report prints */
+  .top, .btn, .filters, .link, .toast {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  main {
+    padding: 0;
+  }
+}
+
+/* =====================================================================
+   13. SIGN IN SCREEN, ACCOUNT, "DID YOU MEAN" PANEL, DELETE
+   ===================================================================== */
+
+/* Makes the "hidden" attribute always win, even on elements that set their own display */
+[hidden] {
+  display: none !important;
+}
+
+/* Sign in and sign up screens: a centred card */
+.gate {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 22px;
+}
+
+.card h1 {
+  font-size: 1.3rem;
+  margin: 0 0 4px;
+}
+
+.sub.small {
+  font-size: 0.85rem;
+  margin: 16px 0 0;
+}
+
+/* Red message under a form (wrong password, etc.) */
+.msg {
+  color: #a3261b;
+  font-size: 0.92rem;
+  min-height: 1.3em;
+  margin: 10px 0 0;
+}
+
+@media (prefers-color-scheme: dark) {
+  .msg { color: #ff8f84; }
+}
+
+/* Title row in the top bar: name on the left, who is signed in on the right */
+.top-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.who {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+/* Sub-heading inside a tab (Account) */
+.subhead {
+  margin: 8px 0 0;
+  font-size: 0.95rem;
+}
+
+/* "Show deleted jobs" tick box */
+.check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 400;
+  margin: 0 0 14px;
+}
+
+.check input {
+  width: auto;
+}
+
+/* "Did you mean...?" panel under the name box */
+.similar {
+  margin-top: 8px;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--open);
+  border-radius: var(--r);
+}
+
+.similar p {
+  margin: 0 0 8px;
+  font-size: 0.92rem;
+}
+
+/* A deleted job (only visible when "Show deleted jobs" is ticked) */
+.job.gone {
+  opacity: 0.6;
+}
+
+/* Delete button: red text */
+.btn.danger {
+  color: #a3261b;
+  border-color: #a3261b;
+  margin-left: auto;
+}
+
+@media (prefers-color-scheme: dark) {
+  .btn.danger { color: #ff8f84; border-color: #ff8f84; }
+}
+
+/* Small text-style button (e.g. "First time here? Sign up") */
+.textbtn {
+  display: block;
+  margin-top: 16px;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--primary);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+}

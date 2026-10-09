@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<!--
+  IT JOB LOG - PAGE STRUCTURE (index.html)
+  ----------------------------------------
+  This file only holds the layout: what appears on the page.
+    - Look and colours ........ style.css
+    - Behaviour / logic ....... script.js  (set your web app address at the top of it)
+
+  The page has two screens. Only one is visible at a time:
+    1. #login-view ... sign in, or sign up (first time only)
+    2. #app-view ..... the app itself (tabs)
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IT Job Log</title>
+
+  <!-- Font (loaded from Google Fonts). Falls back to the device font if offline. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- All the CSS (style.css) -->
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- Shown while the page checks whether you are already signed in -->
+  <div id="boot">Loading...</div>
+
+  <!-- ===================== SCREEN 1: SIGN IN / SIGN UP ===================== -->
+  <div id="login-view" class="gate" hidden>
+    <div class="card">
+      <h1>IT job log</h1>
+
+      <!-- Sign in form (shown first) -->
+      <div id="signin-form">
+        <p class="sub">Sign in to continue</p>
+
+        <label for="lg-user">Your name</label>
+        <input type="text" id="lg-user" autocomplete="username" spellcheck="false">
+
+        <label for="lg-pass">Password</label>
+        <input type="password" id="lg-pass" autocomplete="current-password">
+
+        <p class="msg" id="lg-msg" role="alert"></p>
+        <div class="actions"><button class="btn" id="lg-btn">Sign in</button></div>
+
+        <!-- Only shown while someone still has not signed up -->
+        <button type="button" class="textbtn" id="go-signup" hidden>First time here? Sign up</button>
+        <p class="sub small">Forgot your password? Ask the owner to reopen sign-up for you.</p>
+      </div>
+
+      <!-- Sign up form (opened with the link above) -->
+      <div id="signup-form" hidden>
+        <p class="sub">Type your name and choose a password. Only people on the invite list can sign up.</p>
+
+        <label for="su-user">Your name</label>
+        <input type="text" id="su-user" autocomplete="username" spellcheck="false">
+
+        <label for="su-pass">Choose a password <span class="opt">(at least 8 characters)</span></label>
+        <input type="password" id="su-pass" autocomplete="new-password">
+
+        <label for="su-pass2">Repeat password</label>
+        <input type="password" id="su-pass2" autocomplete="new-password">
+
+        <p class="msg" id="su-msg" role="alert"></p>
+        <div class="actions"><button class="btn" id="su-btn">Sign up</button></div>
+
+        <button type="button" class="textbtn" id="go-signin">Back to sign in</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== SCREEN 3: THE APP ===================== -->
+  <div id="app-view" hidden>
+
+    <!-- TOP BAR: title, who is signed in, tabs -->
+    <header class="top">
+      <div class="top-in">
+        <div class="top-row">
+          <h1>IT job log</h1>
+          <span class="who" id="who"></span>
+        </div>
+        <!-- Each tab button has data-tab="name". The matching page section is id="v-name". -->
+        <nav class="tabs" role="tablist">
+          <button class="tab" role="tab" data-tab="log" aria-selected="true">Log a job</button>
+          <button class="tab" role="tab" data-tab="today" aria-selected="false">Today<span class="n" id="n-today">0</span></button>
+          <button class="tab" role="tab" data-tab="open" aria-selected="false">Open<span class="n" id="n-open">0</span></button>
+          <button class="tab" role="tab" data-tab="history" aria-selected="false">History</button>
+          <button class="tab" role="tab" data-tab="summary" aria-selected="false">Summary</button>
+          <button class="tab" role="tab" data-tab="account" aria-selected="false">Account</button>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+
+      <!-- ===== TAB: LOG A JOB ===== -->
+      <section class="view" id="v-log">
+
+        <label for="requester">Who asked?</label>
+        <!-- list="staffList" gives name suggestions from the Staff tab -->
+        <input type="text" id="requester" list="staffList" autocomplete="off" placeholder="Staff name">
+        <!-- Shows how many earlier jobs this person has (filled in by script.js) -->
+        <p class="hint" id="hint"></p>
+        <!-- Appears when the name looks like someone already on the list -->
+        <div class="similar" id="similar" hidden></div>
+
+        <label for="dept">Department <span class="opt">(optional)</span></label>
+        <input type="text" id="dept" list="deptList" autocomplete="off">
+
+        <span class="lbl">What kind of problem?</span>
+        <!-- Category buttons are created by script.js from the Config tab -->
+        <div class="chips" id="cats"></div>
+
+        <label for="issue">What was the issue?</label>
+        <textarea id="issue" placeholder="e.g. No internet at the front desk"></textarea>
+
+        <label for="action">What did you do? <span class="opt">(optional)</span></label>
+        <textarea id="action" placeholder="e.g. Replaced patch cable, port is working"></textarea>
+
+        <span class="lbl">Status</span>
+        <!-- Status buttons are created by script.js from the Config tab -->
+        <div class="seg" id="statusSeg"></div>
+
+        <div class="row">
+          <div>
+            <label for="minutes">Minutes spent <span class="opt">(optional)</span></label>
+            <input type="number" id="minutes" min="0" inputmode="numeric">
+          </div>
+          <div>
+            <label for="device">Device or asset <span class="opt">(optional)</span></label>
+            <input type="text" id="device" list="deviceList" autocomplete="off" placeholder="e.g. HP printer, PC-14">
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn" id="save">Save job</button>
+        </div>
+      </section>
+
+      <!-- ===== TAB: TODAY ===== -->
+      <section class="view" id="v-today">
+        <div class="head"><h2>Today</h2><span class="sub" id="todaySub"></span></div>
+        <div id="todayList"></div>   <!-- job cards are placed here by script.js -->
+      </section>
+
+      <!-- ===== TAB: OPEN JOBS (anything not Resolved) ===== -->
+      <section class="view" id="v-open">
+        <div class="head"><h2>Open jobs</h2><span class="sub">Oldest first</span></div>
+        <div id="openList"></div>
+      </section>
+
+      <!-- ===== TAB: HISTORY (search + filters) ===== -->
+      <section class="view" id="v-history">
+        <div class="filters">
+          <input type="text" id="q" placeholder="Search name, issue, device..." aria-label="Search">
+          <select id="fCat" aria-label="Category"></select>
+          <select id="fStatus" aria-label="Status"></select>
+        </div>
+        <label class="check"><input type="checkbox" id="showDeleted"> Show deleted jobs</label>
+        <div id="histList"></div>
+        <div class="actions"><button class="btn ghost" id="more" hidden>Show more</button></div>
+      </section>
+
+      <!-- ===== TAB: SUMMARY (counts + printable report) ===== -->
+      <section class="view" id="v-summary">
+        <div class="head">
+          <select id="range" aria-label="Period" style="width:auto">
+            <option value="week">This week</option>
+            <option value="month">This month</option>
+            <option value="30">Last 30 days</option>
+            <option value="all">All time</option>
+          </select>
+          <button class="btn ghost" id="print">Print report</button>
+        </div>
+        <p class="sub" id="rangeLabel"></p>
+        <div id="sumBody"></div>
+      </section>
+
+      <!-- ===== TAB: ACCOUNT (change password, sign out) ===== -->
+      <section class="view" id="v-account">
+        <div class="head"><h2>Account</h2><span class="sub" id="acctName"></span></div>
+
+        <h3 class="subhead">Change password</h3>
+        <label for="ac-old">Current password</label>
+        <input type="password" id="ac-old" autocomplete="current-password">
+        <label for="ac-new">New password <span class="opt">(at least 8 characters)</span></label>
+        <input type="password" id="ac-new" autocomplete="new-password">
+        <label for="ac-new2">Repeat new password</label>
+        <input type="password" id="ac-new2" autocomplete="new-password">
+        <p class="msg" id="ac-msg" role="alert"></p>
+        <div class="actions">
+          <button class="btn" id="ac-btn">Change password</button>
+          <button class="btn ghost" id="logout">Sign out</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Suggestions for the name, department and device boxes (filled by script.js) -->
+    <datalist id="staffList"></datalist>
+    <datalist id="deptList"></datalist>
+    <datalist id="deviceList"></datalist>
+  </div>
+
+  <!-- Small message that pops up at the bottom ("Job saved.") -->
+  <div class="toast" id="toast" role="status"></div>
+
+  <!-- All the JavaScript (script.js) -->
+  <script src="script.js"></script>
+</body>
+</html>
